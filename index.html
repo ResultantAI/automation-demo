@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-System Orchestration Architecture | ResultantAI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1a1f2e 0%, #2c3441 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #47b9f8;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #47b9f8 0%, #00ff88 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            color: #8892a0;
+            margin-bottom: 15px;
+        }
+        
+        .contact-bar {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+            color: #47b9f8;
+        }
+        
+        .contact-bar a {
+            color: #47b9f8;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .contact-bar a:hover {
+            color: #00ff88;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #47b9f8 0%, #00ff88 100%);
+            color: #1a1f2e;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(71, 185, 248, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(71, 185, 248, 0.1);
+            color: #47b9f8;
+            border: 2px solid #47b9f8;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(71, 185, 248, 0.2);
+        }
+        
+        .btn-danger {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+            border: 2px solid #ff4757;
+        }
+        
+        .btn-danger:hover {
+            background: rgba(255, 71, 87, 0.3);
+        }
+        
+        .status-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(71, 185, 248, 0.3);
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .status-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #47b9f8;
+        }
+        
+        .status-item.active {
+            border-left-color: #00ff88;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-item.error {
+            border-left-color: #ff4757;
+        }
+        
+        .status-label {
+            font-size: 0.85rem;
+            color: #8892a0;
+            margin-bottom: 5px;
+        }
+        
+        .status-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .workflow-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .workflow-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #00ff88;
+            text-align: center;
+        }
+        
+        .workflow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            flex-wrap: wrap;
+        }
+        
+        .node {
+            background: linear-gradient(135deg, rgba(71, 185, 248, 0.2) 0%, rgba(0, 255, 136, 0.1) 100%);
+            border: 2px solid #47b9f8;
+            border-radius: 12px;
+            padding: 20px;
+            min-width: 150px;
+            text-align: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 140px;
+        }
+        
+        .node:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(71, 185, 248, 0.3);
+        }
+        
+        .node.active {
+            border-color: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            animation: nodeActive 1.5s ease-in-out;
+        }
+        
+        .node.processing {
+            border-color: #ffa502;
+            animation: processing 1s infinite;
+        }
+        
+        .node.error {
+            border-color: #ff4757;
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.2) 0%, rgba(255, 71, 87, 0.1) 100%);
+        }
+        
+        .node.success {
+            border-color: #00ff88;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2) 0%, rgba(0, 255, 136, 0.1) 100%);
+        }
+        
+        @keyframes nodeActive {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes processing {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .node-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .node-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+        
+        .node-subtitle {
+            font-size: 0.75rem;
+            color: #8892a0;
+        }
+        
+        .node-details {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            text-align: left;
+            display: none;
+        }
+        
+        .node.expanded .node-details {
+            display: block;
+        }
+        
+        .node-details strong {
+            color: #47b9f8;
+        }
+        
+        .arrow {
+            color: #47b9f8;
+            font-size: 2rem;
+            animation: slideRight 2s infinite;
+            flex-shrink: 0;
+        }
+        
+        @keyframes slideRight {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(5px); }
+        }
+        
+        .arrow.active {
+            color: #00ff88;
+            animation: slideRightActive 0.8s infinite;
+        }
+        
+        @keyframes slideRightActive {
+            0%, 100% { transform: translateX(0); opacity: 1; }
+            50% { transform: translateX(10px); opacity: 0.5; }
+        }
+        
+        .failover-panel {
+            background: rgba(255, 71, 87, 0.1);
+            border: 2px solid #ff4757;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .failover-panel.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .failover-title {
+            color: #ff4757;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .failover-content {
+            color: #fff;
+            line-height: 1.6;
+        }
+        
+        .metrics-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #47b9f8;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #47b9f8 0%, #00ff88 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            color: #8892a0;
+            font-size: 0.9rem;
+        }
+        
+        .info-box {
+            background: rgba(71, 185, 248, 0.1);
+            border-left: 4px solid #47b9f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .info-box h3 {
+            color: #47b9f8;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .info-box p {
+            color: #fff;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.5s;
+        }
+        
+        .tutorial-overlay.hidden {
+            display: none;
+        }
+        
+        .tutorial-content {
+            max-width: 600px;
+            background: linear-gradient(135deg, #2c3441 0%, #1a1f2e 100%);
+            border: 3px solid #47b9f8;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            animation: slideUp 0.5s;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .tutorial-step {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        
+        .tutorial-step.active {
+            display: block;
+        }
+        
+        .tutorial-title {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #47b9f8 0%, #00ff88 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .tutorial-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #fff;
+            margin-bottom: 30px;
+        }
+        
+        .tutorial-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .tutorial-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .tutorial-progress {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(71, 185, 248, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .progress-dot.active {
+            background: #47b9f8;
+            transform: scale(1.3);
+        }
+        
+        .highlight-pulse {
+            animation: highlightPulse 2s infinite;
+        }
+        
+        @keyframes highlightPulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(0, 255, 136, 0.8);
+            }
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(71, 185, 248, 0.3);
+            color: #8892a0;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 15px 35px;
+            background: linear-gradient(135deg, #47b9f8 0%, #00ff88 100%);
+            color: #1a1f2e;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(71, 185, 248, 0.5);
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.6rem;
+            }
+            
+            .workflow {
+                flex-direction: column;
+            }
+            
+            .arrow {
+                transform: rotate(90deg);
+            }
+            
+            .node {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Multi-System Orchestration Architecture</h1>
+            <p class="subtitle">Production-Grade Automation for High-Volume Ecommerce Operations</p>
+            <div class="contact-bar">
+                <span>📧 <a href="mailto:chris@resultantai.com">chris@resultantai.com</a></span>
+                <span>📞 <a href="tel:+12403894152">(240) 389-4152</a></span>
+                <span>📅 <a href="https://meetings.hubspot.com/chris4642" target="_blank">Schedule Call</a></span>
+            </div>
+        </header>
+
+        <div class="status-panel">
+            <div class="status-grid">
+                <div class="status-item" id="status-mode">
+                    <div class="status-label">Current Mode</div>
+                    <div class="status-value">Manual Processing</div>
+                </div>
+                <div class="status-item" id="status-throughput">
+                    <div class="status-label">Throughput</div>
+                    <div class="status-value">~15 orders/hour</div>
+                </div>
+                <div class="status-item" id="status-errors">
+                    <div class="status-label">Error Rate</div>
+                    <div class="status-value">~12%</div>
+                </div>
+                <div class="status-item" id="status-latency">
+                    <div class="status-label">Avg Processing Time</div>
+                    <div class="status-value">4-8 minutes</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="toggleBtn">▶ Enable Automation</button>
+            <button class="btn btn-danger" id="errorBtn">⚠ Simulate Payment Failure</button>
+            <button class="btn btn-secondary" id="resetBtn">🔄 Reset Demo</button>
+        </div>
+
+        <!-- Tutorial Overlay -->
+        <div class="tutorial-overlay" id="tutorialOverlay">
+            <div class="tutorial-content">
+                <!-- Step 1: Welcome -->
+                <div class="tutorial-step active" data-step="1">
+                    <div class="tutorial-icon">👋</div>
+                    <h2 class="tutorial-title">Welcome to Your Architecture Demo</h2>
+                    <p class="tutorial-text">
+                        This interactive demo shows the exact multi-system orchestration I'd build for your operation.
+                        <br><br>
+                        <strong>3 things you can do:</strong>
+                    </p>
+                    <div class="tutorial-buttons">
+                        <button class="btn btn-primary" onclick="nextTutorialStep()">Show Me How →</button>
+                        <button class="btn btn-secondary" onclick="skipTutorial()">Skip Tutorial</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Click Nodes -->
+                <div class="tutorial-step" data-step="2">
+                    <div class="tutorial-icon">🖱️</div>
+                    <h2 class="tutorial-title">Click Any System Node</h2>
+                    <p class="tutorial-text">
+                        Each colored box is a system in your workflow (fraud detection, payment processing, CRM, etc.)
+                        <br><br>
+                        <strong>Click any node to see:</strong><br>
+                        • Technical implementation details<br>
+                        • API integrations used<br>
+                        • Failover logic and error handling
+                    </p>
+                    <div class="tutorial-buttons">
+                        <button class="btn btn-primary" onclick="nextTutorialStep()">Next →</button>
+                        <button class="btn btn-secondary" onclick="previousTutorialStep()">← Back</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Enable Automation -->
+                <div class="tutorial-step" data-step="3">
+                    <div class="tutorial-icon">▶️</div>
+                    <h2 class="tutorial-title">Enable Automation</h2>
+                    <p class="tutorial-text">
+                        Click the <strong>"Enable Automation"</strong> button to watch real-time processing.
+                        <br><br>
+                        You'll see orders flow through all 6 systems automatically—showing how your operation would run with zero manual intervention.
+                        <br><br>
+                        Notice the metrics change from manual processing to automated performance.
+                    </p>
+                    <div class="tutorial-buttons">
+                        <button class="btn btn-primary" onclick="nextTutorialStep()">Next →</button>
+                        <button class="btn btn-secondary" onclick="previousTutorialStep()">← Back</button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Error Simulation -->
+                <div class="tutorial-step" data-step="4">
+                    <div class="tutorial-icon">⚠️</div>
+                    <h2 class="tutorial-title">Simulate Payment Failure</h2>
+                    <p class="tutorial-text">
+                        Click <strong>"Simulate Payment Failure"</strong> to see production-grade error handling.
+                        <br><br>
+                        Watch how the system automatically:
+                        <br>
+                        • Retries with exponential backoff (2s → 4s → 8s)<br>
+                        • Opens circuit breaker to prevent cascading failures<br>
+                        • Routes order to manual review queue<br>
+                        • Alerts your team via Slack with full context
+                        <br><br>
+                        <strong>Zero orders lost. Customer experience maintained.</strong>
+                    </p>
+                    <div class="tutorial-buttons">
+                        <button class="btn btn-primary" onclick="closeTutorial()">Start Exploring →</button>
+                        <button class="btn btn-secondary" onclick="previousTutorialStep()">← Back</button>
+                    </div>
+                </div>
+
+                <!-- Progress Dots -->
+                <div class="tutorial-progress">
+                    <div class="progress-dot active" data-dot="1"></div>
+                    <div class="progress-dot" data-dot="2"></div>
+                    <div class="progress-dot" data-dot="3"></div>
+                    <div class="progress-dot" data-dot="4"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="workflow-container">
+            <h2 class="workflow-title">Order Processing Workflow</h2>
+            <div class="workflow" id="workflow">
+                <div class="node" id="node-order" data-step="1">
+                    <div class="node-icon">🛒</div>
+                    <div class="node-title">Order Received</div>
+                    <div class="node-subtitle">Ecommerce Platform</div>
+                    <div class="node-details">
+                        <strong>Webhook:</strong> Shopify/WooCommerce<br>
+                        <strong>Validation:</strong> Schema check, inventory verify<br>
+                        <strong>Idempotency:</strong> Order ID deduplication
+                    </div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="node" id="node-fraud" data-step="2">
+                    <div class="node-icon">🛡️</div>
+                    <div class="node-title">Fraud Check</div>
+                    <div class="node-subtitle">&lt;400ms scoring</div>
+                    <div class="node-details">
+                        <strong>Risk Engine:</strong> Sift/Signifyd API<br>
+                        <strong>Scoring:</strong> Device fingerprint + behavioral<br>
+                        <strong>Action:</strong> Auto-decline high risk (&gt;85 score)
+                    </div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="node" id="node-payment" data-step="3">
+                    <div class="node-icon">💳</div>
+                    <div class="node-title">Payment Process</div>
+                    <div class="node-subtitle">Stripe/Authorize</div>
+                    <div class="node-details">
+                        <strong>Gateway:</strong> Stripe with retry logic<br>
+                        <strong>Failover:</strong> 3 retry attempts, exp backoff<br>
+                        <strong>Circuit Breaker:</strong> Skip after 5 failures
+                    </div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="node" id="node-fulfillment" data-step="4">
+                    <div class="node-icon">📦</div>
+                    <div class="node-title">Fulfillment</div>
+                    <div class="node-subtitle">WMS/OMS Sync</div>
+                    <div class="node-details">
+                        <strong>System:</strong> ShipStation/WMS API<br>
+                        <strong>Routing:</strong> Nearest warehouse selection<br>
+                        <strong>Inventory:</strong> Real-time deduction + sync
+                    </div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="node" id="node-crm" data-step="5">
+                    <div class="node-icon">👤</div>
+                    <div class="node-title">CRM Update</div>
+                    <div class="node-subtitle">HubSpot/Salesforce</div>
+                    <div class="node-details">
+                        <strong>Action:</strong> Customer record enrichment<br>
+                        <strong>Fields:</strong> Order history, LTV, segments<br>
+                        <strong>Trigger:</strong> Post-purchase automation
+                    </div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="node" id="node-notification" data-step="6">
+                    <div class="node-icon">📢</div>
+                    <div class="node-title">Notifications</div>
+                    <div class="node-subtitle">Multi-channel</div>
+                    <div class="node-details">
+                        <strong>Customer:</strong> Email (SendGrid) + SMS (Twilio)<br>
+                        <strong>Team:</strong> Slack channel alert<br>
+                        <strong>Audit:</strong> Compliance log to database
+                    </div>
+                </div>
+            </div>
+
+            <div class="failover-panel" id="failoverPanel">
+                <div class="failover-title">
+                    <span>⚠️</span>
+                    <span>FAILOVER HANDLING IN ACTION</span>
+                </div>
+                <div class="failover-content">
+                    <p><strong>Error Detected:</strong> Payment gateway timeout (3 seconds)</p>
+                    <p><strong>Automated Response:</strong></p>
+                    <ul>
+                        <li>✓ Retry attempt 1 after 2 seconds (exponential backoff)</li>
+                        <li>✓ Retry attempt 2 after 4 seconds</li>
+                        <li>✓ Retry attempt 3 after 8 seconds</li>
+                        <li>✓ Circuit breaker opened - routing to backup processor</li>
+                        <li>✓ Customer notification sent: "Processing order - confirmation in 5 min"</li>
+                        <li>✓ Order moved to manual review queue</li>
+                        <li>✓ Slack alert sent to #operations with order details</li>
+                    </ul>
+                    <p><strong>Result:</strong> Order not lost. Customer experience maintained. Team alerted for intervention.</p>
+                    <p><strong>Audit Trail:</strong> All retry attempts logged with timestamps in compliance database.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="metrics-panel">
+            <div class="metric-card">
+                <div class="metric-value" id="metric-throughput">200+</div>
+                <div class="metric-label">Orders/Day Processed</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="metric-time">~2 min</div>
+                <div class="metric-label">Avg Processing Time</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="metric-errors">0.3%</div>
+                <div class="metric-label">Error Rate</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="metric-cost">-76%</div>
+                <div class="metric-label">Labor Cost Reduction</div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h3>🏗️ Architecture Built for Your Scale</h3>
+            <p><strong>This isn't a demo—it's production architecture.</strong> I built this exact orchestration pattern 3 times:</p>
+            <p>✓ <strong>MCA Financial Services:</strong> Retell AI + Make + Instantly + HubSpot + Slack → 200+ daily lead interactions with intelligent routing</p>
+            <p>✓ <strong>AdLeg Agency:</strong> Compressed 90-minute audits to 2 minutes using Make + Claude API with compliance checks</p>
+            <p>✓ <strong>Honcho Pickleball:</strong> Scaled 1 city to 32 cities ($382K revenue) by automating booking workflows and eliminating 15 hours/week manual work</p>
+        </div>
+
+        <div class="info-box">
+            <h3>🔧 What You're Looking At</h3>
+            <p><strong>Multi-System Orchestration:</strong> This workflow connects 6+ systems with proper error handling, not just API calls strung together.</p>
+            <p><strong>Idempotency Keys:</strong> Each transaction is tracked to prevent duplicate orders—critical for multi-channel operations.</p>
+            <p><strong>Circuit Breakers:</strong> When a service fails repeatedly, the system routes around it instead of cascading failures.</p>
+            <p><strong>Audit Trail:</strong> Every action logged with user ID, timestamp, and outcome for compliance (PCI DSS Requirement 10).</p>
+            <p><strong>Real-Time Sync:</strong> Inventory updates propagate instantly across all sales channels—no overselling, no batch delays.</p>
+        </div>
+
+        <div class="info-box">
+            <h3>📋 My 3-Phase Approach for Your Build</h3>
+            <p><strong>Phase 1 - Business Audit (Week 1-2):</strong> Map your processes across ecommerce, logistics, support, compliance, payments. Identify bottlenecks with time/cost quantification. Deliver automation blueprint prioritized by ROI.</p>
+            <p><strong>Phase 2 - High-Impact Automation (Week 3-8):</strong> Implement priority workflows using n8n/Make + Relevance AI + your existing platforms. Each automation includes failover logic, monitoring, and documentation.</p>
+            <p><strong>Phase 3 - Optimization (Ongoing):</strong> Continuous refinement based on performance data. Automated error logging, performance tracking, and iterative improvements.</p>
+        </div>
+
+        <footer>
+            <p><strong>Built by Chris Mott | ResultantAI</strong></p>
+            <p>15 years operational experience | Builder-Operator, not consultant</p>
+            <p>Rate: $150/hour for strategic + technical work</p>
+            <a href="https://meetings.hubspot.com/chris4642" class="cta-button" target="_blank">Schedule 15-Min Architecture Call</a>
+            <p style="margin-top: 20px;">📧 chris@resultantai.com | 📞 (240) 389-4152</p>
+        </footer>
+    </div>
+
+    <script>
+        let automationEnabled = false;
+        let currentStep = 0;
+        let processingInterval = null;
+
+        const nodes = document.querySelectorAll('.node');
+        const arrows = document.querySelectorAll('.arrow');
+        const toggleBtn = document.getElementById('toggleBtn');
+        const errorBtn = document.getElementById('errorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const failoverPanel = document.getElementById('failoverPanel');
+        
+        const statusMode = document.getElementById('status-mode');
+        const statusThroughput = document.getElementById('status-throughput');
+        const statusErrors = document.getElementById('status-errors');
+        const statusLatency = document.getElementById('status-latency');
+
+        // Make nodes expandable on click
+        nodes.forEach(node => {
+            node.addEventListener('click', () => {
+                node.classList.toggle('expanded');
+            });
+        });
+
+        toggleBtn.addEventListener('click', () => {
+            automationEnabled = !automationEnabled;
+            
+            if (automationEnabled) {
+                toggleBtn.textContent = '⏸ Pause Automation';
+                toggleBtn.classList.remove('btn-primary');
+                toggleBtn.classList.add('btn-secondary');
+                startProcessing();
+                updateStatus(true);
+            } else {
+                toggleBtn.textContent = '▶ Enable Automation';
+                toggleBtn.classList.remove('btn-secondary');
+                toggleBtn.classList.add('btn-primary');
+                stopProcessing();
+                updateStatus(false);
+            }
+        });
+
+        errorBtn.addEventListener('click', () => {
+            if (!automationEnabled) {
+                alert('Please enable automation first to see error handling');
+                return;
+            }
+            simulateError();
+        });
+
+        resetBtn.addEventListener('click', () => {
+            resetDemo();
+        });
+
+        function updateStatus(automated) {
+            if (automated) {
+                statusMode.innerHTML = '<div class="status-label">Current Mode</div><div class="status-value">Automated</div>';
+                statusMode.classList.add('active');
+                statusThroughput.innerHTML = '<div class="status-label">Throughput</div><div class="status-value">200+ orders/day</div>';
+                statusErrors.innerHTML = '<div class="status-label">Error Rate</div><div class="status-value">~0.3%</div>';
+                statusLatency.innerHTML = '<div class="status-label">Avg Processing Time</div><div class="status-value">~2 minutes</div>';
+            } else {
+                statusMode.innerHTML = '<div class="status-label">Current Mode</div><div class="status-value">Manual Processing</div>';
+                statusMode.classList.remove('active');
+                statusThroughput.innerHTML = '<div class="status-label">Throughput</div><div class="status-value">~15 orders/hour</div>';
+                statusErrors.innerHTML = '<div class="status-label">Error Rate</div><div class="status-value">~12%</div>';
+                statusLatency.innerHTML = '<div class="status-label">Avg Processing Time</div><div class="status-value">4-8 minutes</div>';
+            }
+        }
+
+        function startProcessing() {
+            currentStep = 0;
+            processingInterval = setInterval(() => {
+                processNextStep();
+            }, 1200);
+        }
+
+        function stopProcessing() {
+            if (processingInterval) {
+                clearInterval(processingInterval);
+                processingInterval = null;
+            }
+            resetNodes();
+        }
+
+        function processNextStep() {
+            // Clear previous states
+            nodes.forEach(node => {
+                node.classList.remove('processing', 'active');
+            });
+            arrows.forEach(arrow => {
+                arrow.classList.remove('active');
+            });
+
+            // Activate current step
+            if (currentStep < nodes.length) {
+                nodes[currentStep].classList.add('processing');
+                
+                setTimeout(() => {
+                    nodes[currentStep].classList.remove('processing');
+                    nodes[currentStep].classList.add('success');
+                    
+                    if (currentStep < arrows.length) {
+                        arrows[currentStep].classList.add('active');
+                    }
+                }, 800);
+
+                currentStep++;
+            } else {
+                // Complete cycle - restart
+                setTimeout(() => {
+                    nodes.forEach(node => {
+                        node.classList.remove('success');
+                    });
+                    currentStep = 0;
+                }, 1000);
+            }
+        }
+
+        function simulateError() {
+            stopProcessing();
+            resetNodes();
+
+            // Progress to payment node
+            for (let i = 0; i < 3; i++) {
+                nodes[i].classList.add('success');
+                if (i < arrows.length) {
+                    arrows[i].classList.add('active');
+                }
+            }
+
+            // Show error on payment node
+            setTimeout(() => {
+                nodes[2].classList.add('error');
+                nodes[2].classList.remove('success');
+                failoverPanel.classList.add('show');
+                
+                // After showing error handling, complete the workflow
+                setTimeout(() => {
+                    nodes[2].classList.remove('error');
+                    nodes[2].classList.add('success');
+                    
+                    // Complete remaining steps
+                    for (let i = 3; i < nodes.length; i++) {
+                        setTimeout(() => {
+                            nodes[i].classList.add('success');
+                            if (i < arrows.length) {
+                                arrows[i].classList.add('active');
+                            }
+                        }, (i - 3) * 600);
+                    }
+                }, 3000);
+            }, 500);
+        }
+
+        function resetNodes() {
+            nodes.forEach(node => {
+                node.classList.remove('processing', 'active', 'error', 'success');
+            });
+            arrows.forEach(arrow => {
+                arrow.classList.remove('active');
+            });
+            failoverPanel.classList.remove('show');
+        }
+
+        function resetDemo() {
+            automationEnabled = false;
+            toggleBtn.textContent = '▶ Enable Automation';
+            toggleBtn.classList.remove('btn-secondary');
+            toggleBtn.classList.add('btn-primary');
+            stopProcessing();
+            resetNodes();
+            updateStatus(false);
+        }
+
+        // Auto-start demo on load for immediate impact
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                // Auto-click toggle to start demo
+                // toggleBtn.click();
+            }, 1000);
+        });
+
+        // Tutorial functionality
+        let currentTutorialStep = 1;
+        const totalTutorialSteps = 4;
+
+        function nextTutorialStep() {
+            if (currentTutorialStep < totalTutorialSteps) {
+                // Hide current step
+                document.querySelector(`.tutorial-step[data-step="${currentTutorialStep}"]`).classList.remove('active');
+                document.querySelector(`.progress-dot[data-dot="${currentTutorialStep}"]`).classList.remove('active');
+                
+                // Show next step
+                currentTutorialStep++;
+                document.querySelector(`.tutorial-step[data-step="${currentTutorialStep}"]`).classList.add('active');
+                document.querySelector(`.progress-dot[data-dot="${currentTutorialStep}"]`).classList.add('active');
+            }
+        }
+
+        function previousTutorialStep() {
+            if (currentTutorialStep > 1) {
+                // Hide current step
+                document.querySelector(`.tutorial-step[data-step="${currentTutorialStep}"]`).classList.remove('active');
+                document.querySelector(`.progress-dot[data-dot="${currentTutorialStep}"]`).classList.remove('active');
+                
+                // Show previous step
+                currentTutorialStep--;
+                document.querySelector(`.tutorial-step[data-step="${currentTutorialStep}"]`).classList.add('active');
+                document.querySelector(`.progress-dot[data-dot="${currentTutorialStep}"]`).classList.add('active');
+            }
+        }
+
+        function closeTutorial() {
+            document.getElementById('tutorialOverlay').classList.add('hidden');
+            // Add highlight pulse to toggle button to draw attention
+            toggleBtn.classList.add('highlight-pulse');
+            setTimeout(() => {
+                toggleBtn.classList.remove('highlight-pulse');
+            }, 4000);
+        }
+
+        function skipTutorial() {
+            closeTutorial();
+        }
+
+        // Check if user has seen tutorial before (using localStorage)
+        window.addEventListener('load', () => {
+            const hasSeenTutorial = localStorage.getItem('hasSeenTutorial');
+            if (hasSeenTutorial === 'true') {
+                // Skip tutorial for returning visitors
+                document.getElementById('tutorialOverlay').classList.add('hidden');
+            }
+        });
+
+        // Mark tutorial as seen when closed
+        function closeTutorial() {
+            localStorage.setItem('hasSeenTutorial', 'true');
+            document.getElementById('tutorialOverlay').classList.add('hidden');
+            // Add highlight pulse to toggle button to draw attention
+            toggleBtn.classList.add('highlight-pulse');
+            setTimeout(() => {
+                toggleBtn.classList.remove('highlight-pulse');
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
